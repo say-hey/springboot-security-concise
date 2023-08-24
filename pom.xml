@@ -38,6 +38,12 @@
 			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
 		</dependency>
 
+
+		<!-- 工具包 -->
+		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+
+
+
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>

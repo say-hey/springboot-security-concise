@@ -1,8 +1,14 @@
 package com.example.springbootsecurityconcise.bean;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,24 +22,48 @@ import java.util.Set;
 
 @Data
 @Entity
-@Table
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "user")
 public class User {
 
     @Id
     // 主键自动增长
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     Integer id;
+
+    @Column(name = "username")
     String username;
+
+    @Column(name = "password")
     String password;
 
-    // 用户角色多对多，关联表为user_role，当前对象在关联表对应的外键，和另一方在关联表中对应的外键，并且要实例化
-    @ManyToMany(targetEntity = Role.class, cascade = CascadeType.ALL)
+    /**
+     * 多对多关系会在创建用户和新角色时级联新增，关联表为user_role，当前对象在关联表对应的外键，和另一方在关联表中对应的外键
+     * cascade:级联操作，如保存、删除时级联的行为
+     * joinColumns:在关联表中的外键名
+     * inverseJoinColumns:另一方在关联表中的外键名
+     */
+    @ManyToMany(targetEntity = Role.class, cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinTable(name = "user_role",
             joinColumns = {@JoinColumn(name = "u_id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "r_id", referencedColumnName = "id")})
-    Set<Role> roles = new HashSet<>();
+    List<Role> roles = new ArrayList<>();
 
-    // 一对多
-//    @OneToMany
-//    Set<Role> roles = new HashSet<>();
+
+    /**
+     * 重写toString()方法，否则在sout输出时，会导致两个对象的toString()相互调用，现在需要去掉一方的关联字段输出
+     * java.lang.StackOverflowError
+     * @return
+     */
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", roles=" + roles +
+                '}';
+    }
 }
