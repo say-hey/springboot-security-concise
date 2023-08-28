@@ -76,7 +76,8 @@ class SpringbootSecurityConciseApplicationTests {
 		System.out.println(all1);
 
 		User jerry = userRepository.findUserByUsername("Jerry");
-		System.out.println(jerry.getRoles());
+		System.out.println("roles: " + jerry.getRoles());
+		System.out.println("authorities: " + jerry.getAuthorities());
 
 		List<String> list = jerry.getRoles().stream().map(Role::getRole).toList();
 		String[] var3 = list.toString().split(",");

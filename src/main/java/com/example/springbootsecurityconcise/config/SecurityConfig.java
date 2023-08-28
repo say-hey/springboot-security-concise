@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -36,10 +37,26 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     *
+     * 和 extends SecurityConfigurerAdapter.configure(AuthenticationManagerBuilder)有什么不同？
+     * 之前的做法有在configure(AuthenticationManagerBuilder)中配置auth.userDetailsService(myDetailsService).passwordEncoder(bcry)
+     * 在configure(HttpSecurity)中配置http.authorizeHttpRequests()认证
+     * 现在同样使用HttpSecurity参数，HttpSecurity：具体的权限控制规则配置
+     * @param http
+     * @return
+     * @throws Exception
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth->{
+
+                    // 设置url权限，注意所有权限的配置顺序
+                    auth.requestMatchers("/home").permitAll();
+                    auth.requestMatchers("/home/l0").hasRole("USER");
+                    auth.requestMatchers("/home/l1/**").hasRole("Dog");
+                    auth.requestMatchers("/home/l2/**").hasRole("Cat");
                     auth.anyRequest().authenticated();
                 })
                 .formLogin(conf->{
@@ -63,9 +80,29 @@ public class SecurityConfig {
                     conf.logoutSuccessUrl("/login");
                     conf.permitAll();
                 })
+                // 使用自定义的userDetails认证过程，
+                // .userDetailsService(null)
                 .csrf(AbstractHttpConfigurer::disable)// 关闭跨站请求伪造保护功能
                 .build();
     }
+
+    /**
+     * 和上面方法有什么不同？从方法名看filterChain更专注于处理认证中间的事件，使用的是同样的HttpSecurity：具体的权限控制规则配置
+     * 点进源码都是同一个地方HttpSecurity HttpSecurityConfiguration.httpSecurity()
+     * 结果是一样的 Could not autowire. There is more than one bean of 'HttpSecurity' type.
+     * @param http
+     */
+    // @Bean
+    // public HttpSecurity configure(HttpSecurity http) throws Exception {
+    //     return http.authorizeHttpRequests(auth->{
+    //         // 设置url权限
+    //         auth.requestMatchers("/home").permitAll();
+    //         auth.requestMatchers("/home/l0").hasRole("USER");
+    //         auth.requestMatchers("/home/l1/**").hasRole("Dog");
+    //         auth.requestMatchers("/home/l2/**").hasRole("Cat");
+    //     });
+    // }
+
 
     /**
      * 登录成功处理器

@@ -22,7 +22,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "role")
-public class Role{
+public class Role {
 
 
     @Id

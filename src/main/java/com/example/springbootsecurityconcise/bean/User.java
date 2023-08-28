@@ -6,12 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 用户表
@@ -25,7 +25,9 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "user")
-public class User {
+// 自定义的User可以实现 implements UserDetails 接口，需要完成方法如是否可用，是否锁定，是否过期，角色集合等，同时在数据库中添加这些字段
+// 实现这个方法可用于扩展，也可以不实现
+public class User implements UserDetails{
 
     @Id
     // 主键自动增长
@@ -38,6 +40,22 @@ public class User {
 
     @Column(name = "password")
     String password;
+
+    // 过期
+    @Column(name = "isAccountNonExpired")
+    Boolean isAccountNonExpired;
+    // 锁定
+    @Column(name = "isAccountNonLocked")
+    Boolean isAccountNonLocked;
+    // 凭证
+    @Column(name = "isCredentialsNonExpired")
+    Boolean isCredentialsNonExpired;
+    // 启用
+    @Column(name = "isEnabled")
+    Boolean isEnabled;
+    // 权限
+    // List<GrantedAuthority> authorities;
+
 
     /**
      * 多对多关系会在创建用户和新角色时级联新增，关联表为user_role，当前对象在关联表对应的外键，和另一方在关联表中对应的外键
@@ -63,7 +81,71 @@ public class User {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
+                ", isAccountNonExpired=" + isAccountNonExpired +
+                ", isAccountNonLocked=" + isAccountNonLocked +
+                ", isCredentialsNonExpired=" + isCredentialsNonExpired +
+                ", isEnabled=" + isEnabled +
                 ", roles=" + roles +
                 '}';
+    }
+
+
+    // 实现UserDetails后的方法
+
+    /**
+     * 获取权限，这里使用的是GrantedAuthority类，在UserDetailsService中出现，用于组装角色权限信息
+     * 既然要类型转换，自定义的Role类是否需要和GrantedAuthority有关联？
+     *
+     * roles: [Role{id=1, role='Cat'}, Role{id=2, role='Dog'}]
+     * authorities: [ROLE_Dog, ROLE_Cat]
+     *
+     * @return
+     */
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        List<Role> roles = this.getRoles();
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        for (Role role : roles) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_"+role.getRole()));
+        }
+
+        return authorities;
+    }
+
+    /**
+     * 账户是否过期
+     * @return
+     */
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
+
+    /**
+     * 账户是否锁定
+     * @return
+     */
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
+    }
+
+    /**
+     * 凭证是否过期
+     * @return
+     */
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
+
+    /**
+     * 是否启用
+     * @return
+     */
+    @Override
+    public boolean isEnabled() {
+        return false;
     }
 }
