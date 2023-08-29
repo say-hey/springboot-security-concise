@@ -3,6 +3,31 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
 <head>
     <title>Welcome</title>
+
+    <script type="text/javascript" src="/js/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript">
+        $(function (){
+            $("#btnLogin").click(function () {
+                console.log("ajax")
+                var uname = $("#username").val();
+                var pwd = $("#password").val();
+                $.ajax({
+                    url:"/login",
+                    type:"POST",
+                    data:{
+                        "username":uname,
+                        "password":pwd
+                    },
+                    dataType:"json",
+                    success:function (res) {
+                        alert(res.status +":"+res.msg)
+                    }
+                })
+            })
+        })
+    </script>
+
+
 </head>
 <body>
 <h1>Welcome Log In</h1>
@@ -21,5 +46,13 @@
     </div>
     <input type="submit" value="Log in" />
 </form>
+
+<br>
+    <div>
+        使用Ajax登录，json传递数据<br>
+        用户名:<input type="text" id="username"><br>
+        密&nbsp;码:<input type="password" id="password"><br>
+        <button id="btnLogin">登录</button><br>
+    </div>
 </body>
 </html>

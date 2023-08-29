@@ -1,9 +1,12 @@
 package com.example.springbootsecurityconcise.config;
 
 
+import com.example.springbootsecurityconcise.handler.SecurityAuthFailureHandler;
+import com.example.springbootsecurityconcise.handler.SecurityAuthSuccessHandler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,13 @@ import java.io.IOException;
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
+
+
+    // 验证成功和失败处理器
+    @Autowired
+    SecurityAuthSuccessHandler successHandler;
+    @Autowired
+    SecurityAuthFailureHandler failureHandler;
 
     /**
      * 密码编码器
@@ -54,6 +64,8 @@ public class SecurityConfig {
 
                     // 设置url权限，注意所有权限的配置顺序
                     auth.requestMatchers("/home").permitAll();
+                    // 静态资源
+                    auth.requestMatchers("/js/**").permitAll();
                     auth.requestMatchers("/home/l0").hasRole("USER");
                     auth.requestMatchers("/home/l1/**").hasRole("Dog");
                     auth.requestMatchers("/home/l2/**").hasRole("Cat");
@@ -66,9 +78,12 @@ public class SecurityConfig {
                     // 表单登录请求
                     conf.loginProcessingUrl("/login");
                     // 登录成功处理器，取消defaultSuccessUrl默认登录成功页可以看到效果，如登录失败处理器类似
-                    conf.successHandler(authenticationSuccessHandler());
+                    // conf.successHandler(authenticationSuccessHandler());
                     // 登录失败处理器，但此处不能在表单上方显示error信息
-                    conf.failureHandler(authenticationFailureHandler());
+                    // conf.failureHandler(authenticationFailureHandler());
+                    // 使用handler类，不是下面的方法
+                    conf.successHandler(successHandler);
+                    conf.failureHandler(failureHandler);
                     // 默认登录成功页
                     conf.defaultSuccessUrl("/home");
                     // 登录相关请求不需要认证
@@ -105,7 +120,8 @@ public class SecurityConfig {
 
 
     /**
-     * 登录成功处理器
+     * 仅示例，不使用
+     * 登录成功处理器，不使用这个，使用另外新建了一个类
      * @return
      */
     public AuthenticationSuccessHandler authenticationSuccessHandler(){
@@ -123,7 +139,8 @@ public class SecurityConfig {
     }
 
     /**
-     * 登录失败处理器
+     * 仅示例，不使用
+     * 登录失败处理器，不使用这个，使用另外新建的类
      */
     public AuthenticationFailureHandler authenticationFailureHandler(){
         // 可转为lambda表达式
