@@ -12,7 +12,7 @@ public class indexController {
 
     @GetMapping("/login")
     public String login(){
-        System.out.println("get/login");
+        System.out.println("get/index/login");
         return "login";
     }
 

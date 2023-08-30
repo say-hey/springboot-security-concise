@@ -18,6 +18,16 @@ import java.io.PrintWriter;
  */
 @Component
 public class SecurityAuthFailureHandler implements AuthenticationFailureHandler {
+
+    // 添加result属性，可以让第三方异常调用，展示异常信息
+    private Result result;
+    public Result getResult() {
+        return result;
+    }
+    public void setResult(Result result) {
+        this.result = result;
+    }
+
     /**
      * 验证失败后执行
      * @param request 请求对象
@@ -30,12 +40,17 @@ public class SecurityAuthFailureHandler implements AuthenticationFailureHandler 
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         // 登录的用户验证失败后执行
         response.setContentType("text/json;charset=utf-8");
+        System.out.println("failure handler...");
 
+        // 判断是否自定义的result，还是第三方异常调用的result，第三方异常调用时，result已经有值了
+        if(result == null){
+            Result localResult = new Result();
+            localResult.setCode(1);
+            localResult.setStatus(500);
+            localResult.setMsg("登录失败(用户名或密码错误)!");
+            result = localResult;
+        }
 
-        Result result = new Result();
-        result.setCode(1);
-        result.setStatus(500);
-        result.setMsg("登录失败(用户名或密码错误)!");
         // 使用jsckson
         ObjectMapper mapper = new ObjectMapper();
         ServletOutputStream outputStream = response.getOutputStream();

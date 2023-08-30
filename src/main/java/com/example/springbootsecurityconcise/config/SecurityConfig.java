@@ -1,6 +1,7 @@
 package com.example.springbootsecurityconcise.config;
 
 
+import com.example.springbootsecurityconcise.filter.VerificationFilter;
 import com.example.springbootsecurityconcise.handler.SecurityAuthFailureHandler;
 import com.example.springbootsecurityconcise.handler.SecurityAuthSuccessHandler;
 import jakarta.servlet.ServletException;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
 
@@ -64,6 +66,8 @@ public class SecurityConfig {
 
                     // 设置url权限，注意所有权限的配置顺序
                     auth.requestMatchers("/home").permitAll();
+                    // 验证码
+                    auth.requestMatchers("/captcha/**").permitAll();
                     // 静态资源
                     auth.requestMatchers("/js/**").permitAll();
                     auth.requestMatchers("/home/l0").hasRole("USER");
@@ -76,16 +80,17 @@ public class SecurityConfig {
                     // https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/form.html
                     conf.loginPage("/login");
                     // 表单登录请求
+                    // 登录页是使用表单还是ajax可在login.html修改
                     conf.loginProcessingUrl("/login");
                     // 登录成功处理器，取消defaultSuccessUrl默认登录成功页可以看到效果，如登录失败处理器类似
                     // conf.successHandler(authenticationSuccessHandler());
                     // 登录失败处理器，但此处不能在表单上方显示error信息
                     // conf.failureHandler(authenticationFailureHandler());
-                    // 使用handler类，不是下面的方法
+                    // 使用handler类
                     conf.successHandler(successHandler);
                     conf.failureHandler(failureHandler);
-                    // 默认登录成功页
-                    conf.defaultSuccessUrl("/home");
+                    // 默认登录成功页，使用了handler，就不要使用默认登录页，否则handler不起作用
+                    // conf.defaultSuccessUrl("/home");
                     // 登录相关请求不需要认证
                     conf.permitAll();
                 })
@@ -95,6 +100,8 @@ public class SecurityConfig {
                     conf.logoutSuccessUrl("/login");
                     conf.permitAll();
                 })
+                // 使用自定义过滤器，并且
+                .addFilterBefore(new VerificationFilter(), UsernamePasswordAuthenticationFilter.class)
                 // 使用自定义的userDetails认证过程，
                 // .userDetailsService(null)
                 .csrf(AbstractHttpConfigurer::disable)// 关闭跨站请求伪造保护功能
@@ -102,7 +109,7 @@ public class SecurityConfig {
     }
 
     /**
-     * 和上面方法有什么不同？从方法名看filterChain更专注于处理认证中间的事件，使用的是同样的HttpSecurity：具体的权限控制规则配置
+     * 和上面方法有什么不同？
      * 点进源码都是同一个地方HttpSecurity HttpSecurityConfiguration.httpSecurity()
      * 结果是一样的 Could not autowire. There is more than one bean of 'HttpSecurity' type.
      * @param http

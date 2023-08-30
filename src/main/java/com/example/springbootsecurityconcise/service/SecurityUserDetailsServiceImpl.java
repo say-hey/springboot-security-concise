@@ -78,6 +78,7 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
                 // .accountLocked()
                 // 账号是否可用
                 // .disabled()
+
                 .build();
 
         // 其他方式代码：角色集合

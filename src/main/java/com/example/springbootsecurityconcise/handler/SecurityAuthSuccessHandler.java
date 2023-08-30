@@ -2,6 +2,7 @@ package com.example.springbootsecurityconcise.handler;
 
 import com.example.springbootsecurityconcise.vo.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ import java.io.PrintWriter;
  */
 @Component
 public class SecurityAuthSuccessHandler implements AuthenticationSuccessHandler {
+
     /**
      * 验证成功后执行
      * @param request 请求对象
@@ -30,7 +32,7 @@ public class SecurityAuthSuccessHandler implements AuthenticationSuccessHandler 
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         // 登录的用户验证成功后执行
         response.setContentType("text/json;charset=utf-8");
-
+        System.out.println("success handler...");
         Result result = new Result();
         result.setCode(0);
         result.setStatus(200);
@@ -39,6 +41,7 @@ public class SecurityAuthSuccessHandler implements AuthenticationSuccessHandler 
         ObjectMapper mapper = new ObjectMapper();
         ServletOutputStream outputStream = response.getOutputStream();
         mapper.writeValue(outputStream, result);
+
 
         outputStream.flush();
         outputStream.close();

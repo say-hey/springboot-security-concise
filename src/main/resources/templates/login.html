@@ -9,22 +9,35 @@
         $(function (){
             $("#btnLogin").click(function () {
                 console.log("ajax")
+                alert("ajax")
                 var uname = $("#username").val();
                 var pwd = $("#password").val();
+                // 用户输入验证码
+                var textcode = $("#textcode").val();
+
                 $.ajax({
                     url:"/login",
                     type:"POST",
+                    // async: false,
                     data:{
                         "username":uname,
-                        "password":pwd
+                        "password":pwd,
+                        "code":textcode
                     },
                     dataType:"json",
-                    success:function (res) {
+                    success:function(res) {
+                        console.log(res)
                         alert(res.status +":"+res.msg)
+                        // window.location.href = "/home"
                     }
                 })
             })
         })
+
+        function changeCode(){
+            var url = "/captcha/code?t=" + new Date();
+            $("#imageCode").attr("src", url);
+        }
     </script>
 
 
@@ -52,6 +65,9 @@
         使用Ajax登录，json传递数据<br>
         用户名:<input type="text" id="username"><br>
         密&nbsp;码:<input type="password" id="password"><br>
+        验证码:<input type="text" id="textcode">
+        <img src="/captcha/code" id="imageCode"/>
+        <a href="javascript:void(0)" onclick="changeCode()">重新获取</a><br>
         <button id="btnLogin">登录</button><br>
     </div>
 </body>
